@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            margin: 20px 0;
+        }
+
+        #blockchain {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .block {
+            width: 90%;
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .block:hover {
+            transform: scale(1.02);
+        }
+
+        .hash {
+            font-size: 0.8em;
+            color: #555;
+        }
+
+        .data {
+            font-size: 1.2em;
+        }
+
+        .buttons {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Blockchain Simulator</h1>
+    <div id="blockchain"></div>
+    <div class="buttons">
+        <button onclick="addBlock()">Add Block</button>
+        <button onclick="branchChain()">Branch Chain</button>
+    </div>
+
+    <script>
+        class Block {
+            constructor(index, data, previousHash = '') {
+                this.index = index;
+                this.timestamp = new Date().toLocaleString();
+                this.data = data;
+                this.previousHash = previousHash;
+                this.hash = this.calculateHash();
+            }
+
+            calculateHash() {
+                return String(this.index + this.timestamp + JSON.stringify(this.data) + this.previousHash).split('').reduce((hash, char) => {
+                    hash = ((hash << 5) - hash) + char.charCodeAt(0);
+                    return hash & hash;
+                }, 0);
+            }
+        }
+
+        let blockchain = [new Block(0, "Genesis Block", "0")];
+
+        function addBlock() {
+            const previousBlock = blockchain[blockchain.length - 1];
+            const newBlock = new Block(blockchain.length, `Block #${blockchain.length}`, previousBlock.hash);
+            blockchain.push(newBlock);
+            displayBlockchain();
+        }
+
+        function branchChain() {
+            const randomIndex = Math.floor(Math.random() * blockchain.length);
+            const newBranchBlock = new Block(blockchain.length, `Branch from Block #${randomIndex}`, blockchain[randomIndex].hash);
+            blockchain.push(newBranchBlock);
+            displayBlockchain();
+        }
+
+        function displayBlockchain() {
+            const blockchainDiv = document.getElementById('blockchain');
+            blockchainDiv.innerHTML = '';
+
+            blockchain.forEach(block => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = 'block';
+                blockDiv.innerHTML = `
+                    <div><strong>Index:</strong> ${block.index}</div>
+                    <div><strong>Timestamp:</strong> ${block.timestamp}</div>
+                    <div class="data"><strong>Data:</strong> ${block.data}</div>
+                    <div class="hash"><strong>Previous Hash:</strong> ${block.previousHash}</div>
+                    <div class="hash"><strong>Hash:</strong> ${block.hash}</div>
+                `;
+                blockchainDiv.appendChild(blockDiv);
+            });
+        }
+
+        displayBlockchain();
+    </script>
+</body>
+</html>
